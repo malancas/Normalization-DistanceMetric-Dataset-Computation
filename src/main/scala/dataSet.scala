@@ -22,7 +22,7 @@ sealed trait DataSet {
   // Update the new extreme minimum and maximum attributes. Used with scala.math.min and scala.math.max
   def getExtremesRecursive(i: Int, dataSet: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
     if (i < dataSet.length - 1) {
-      getExtremesRecursive(i+1, dataSet, for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b))
+      getExtremesRecursive(i+1, dataSet, for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip maxAtts)) yield math.max(a,b))
     }
     List(for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip maxAtts)) yield math.max(a,b))
 }
@@ -47,6 +47,15 @@ sealed trait DataSet {
         goDoMath(i+1, k+1, minAtts, maxAtts, data, newData(i) :+ doMath(minAtts(k), maxAtts(k), data(i)(k)))
       }
     }
+  }
+
+  def goDoMath2(data: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
+    val res = for {
+      i <- 0 until data.length
+      j <- 0 until numAttributes
+    } yield List(i, j map(i, j, ))
+
+    yield Pot(height, width, flowers.map(flower => FlowerInPot(w, h, flower)))
   }
 
   def normalize(): Double = {
