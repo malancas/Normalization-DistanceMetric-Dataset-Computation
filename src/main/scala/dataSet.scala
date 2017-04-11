@@ -37,34 +37,25 @@ sealed trait DataSet {
     List(newMaxes, newMins)
   }
 
+  def doMath(minAtt: Double, maxAtt: Double, data: Double): List[Double] = {
+    (data - minAtt) / (maxAtt -  minAtt)
+  }
+
   def goDoMath(i: Int, k: Int, minAtts: List[Double], maxAtts: List[Double], data: List[List[Double]], newData: List[List[Double]]): List[List[Double]] = {
     if (i < data.length){
       if (k < numAttributes) {
-        goDoMath(i+1, k+1, minAtts, maxAtts, data, newData(i) :+ doMath(i, k, minAtts, maxAtts, data))
+        goDoMath(i+1, k+1, minAtts, maxAtts, data, newData(i) :+ doMath(minAtts(k), maxAtts(k), data(i)(k)))
       }
     }
-  }
-
-  def doMath(i: Int, k: Int, minAtts: List[Double], maxAtts: List[Double], data: List[List[Double]]): List[Double] = {
-    (data(i)(k) - minAtts(k)) / (maxAtts(k) - minAtts(k))
-  }
-
-  def go(i: Int, k: Int, f: Int, Int => List[Double]): Double = {
-    if (i < data.length) {
-      if (k < numAttributes) {
-        f(i, k)
-      }
-    }
-    go(i+1, k+1, f)
   }
 
   def normalize(): Double = {
     val numOfAttributes = (data.length - 1)
-    val maxAtt = (math.NEG_INF_DOUBLE * numOfAttributes)
-    val minAtt = (math.POS_INF_DOUBLE * numOfAttributes)
+    val maxAtts = (math.NEG_INF_DOUBLE * numOfAttributes)
+    val minAtts = (math.POS_INF_DOUBLE * numOfAttributes)
 
-    go(0, 0, recordExtremes)
-    go(0, 0, doMath)
+    getExtremesRecursive(0, data, minAtts, maxAtts)
+    goDoMath(0, 0, minAtts, maxAtts, data, )
   }
 }
 
