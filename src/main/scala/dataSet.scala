@@ -2,15 +2,51 @@ import scala.math
 
 sealed trait DataSet {
   val data
-  def addDataFromFile(filename: String): Unit
+  val minAtt
+  val maxAtt
 
-  def recordExtremes(i: Int, k: Int): List[Double] = {
-    if (data(i)(k) < minAtt(k)) min(k) = data(i)(k)
-    if (data(i)(k) < maxAtt(k)) maxAtt(k) = data(i)(k)
+  def addDataFromFile(filename: String): Unit = {
+    /*
+     with open(dataFile, 'r') as f:
+       for line in f:
+         line = map(str.strip, line.split(','))
+         for i in range(0, len(line)-1):
+           line[i] = float(line[i])
+           dataList.append(line)
+           self.datSet = dataList
+    */
+
+    io.Source.fromFile(filename).map(str => str.strip, line => line.split(',')).map(i => float(i))
   }
 
-  def doMath(i: Int, k: Int): List[Double] = {
-    data(i)(k) = (data(i)(k) - minAtt(k)) / (maxAtt(k) - minAtt(k))
+  // Update the new extreme minimum and maximum attributes. Used with scala.math.min and scala.math.max
+  def getExtremesRecursive(i: Int, dataSet: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
+    if (i < dataSet.length - 1) {
+      getExtremesRecursive(i+1, dataSet, for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b))
+    }
+    List(for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip maxAtts)) yield math.max(a,b))
+}
+
+  def getExtremes(dataSet: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
+    for ( i <- 0 until dataSet.length){
+      val newMaxes = for ((a,b) <- (dataSet(i) zip maxAtts)) yield math.max(a,b)
+
+      val newMins = for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b)
+    }
+
+    List(newMaxes, newMins)
+  }
+
+  def goDoMath(i: Int, k: Int, minAtts: List[Double], maxAtts: List[Double], data: List[List[Double]], newData: List[List[Double]]): List[List[Double]] = {
+    if (i < data.length){
+      if (k < numAttributes) {
+        goDoMath(i+1, k+1, minAtts, maxAtts, data, newData(i) :+ doMath(i, k, minAtts, maxAtts, data))
+      }
+    }
+  }
+
+  def doMath(i: Int, k: Int, minAtts: List[Double], maxAtts: List[Double], data: List[List[Double]]): List[Double] = {
+    (data(i)(k) - minAtts(k)) / (maxAtts(k) - minAtts(k))
   }
 
   def go(i: Int, k: Int, f: Int, Int => List[Double]): Double = {
@@ -32,8 +68,10 @@ sealed trait DataSet {
   }
 }
 
-case object Nil extends DataSet[Nothing]
+object DataSet {
+  case object NilDataSet extends DataSet[Nothing]
 
-case class Data(data: List[Double]) extends DataSet {
-  val data //get data
+  case class Data(data: List[Double]) extends DataSet {
+    this.data = data
+  }
 }
