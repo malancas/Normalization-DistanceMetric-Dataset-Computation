@@ -25,7 +25,7 @@ sealed trait DataSet {
       getExtremesRecursive(i+1, dataSet, for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip maxAtts)) yield math.max(a,b))
     }
     List(for ((a,b) <- (dataSet(i) zip minAtts)) yield math.min(a,b), for ((a,b) <- (dataSet(i) zip maxAtts)) yield math.max(a,b))
-}
+  }
 
   def getExtremes(dataSet: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
     for ( i <- 0 until dataSet.length){
@@ -41,21 +41,16 @@ sealed trait DataSet {
     (data - minAtt) / (maxAtt -  minAtt)
   }
 
-  def goDoMath(i: Int, k: Int, minAtts: List[Double], maxAtts: List[Double], data: List[List[Double]], newData: List[List[Double]]): List[List[Double]] = {
-    if (i < data.length){
-      if (k < numAttributes) {
-        goDoMath(i+1, k+1, minAtts, maxAtts, data, newData(i) :+ doMath(minAtts(k), maxAtts(k), data(i)(k)))
-      }
-    }
+  def doMathInnerLoop(innerData: List[Double], minAtts: List[Double], maxAtts: List[Double]): IndexedSeq[Int] = {
+    for {
+      i <- 0 until numAttributes
+    } yield (doMath(minAtt(i), maxAtt(i), innerData(i)))
   }
 
-  def goDoMath2(data: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
+  def goDoMath(data: List[List[Double]], minAtts: List[Double], maxAtts: List[Double]): List[List[Double]] = {
     val res = for {
       i <- 0 until data.length
-      j <- 0 until numAttributes
-    } yield List(i, j map(i, j, ))
-
-    yield Pot(height, width, flowers.map(flower => FlowerInPot(w, h, flower)))
+    } yield (doMathInnerLoop(data(i), minAtts, maxAtts))
   }
 
   def normalize(): Double = {
